@@ -3,8 +3,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv("DISCORD_GUILD")
+TOKEN = os.getenv('DISCORD_TOKEN') #edit .env file
+GUILD = os.getenv("DICORD_GUILD")
 
 client = discord.Client()
 
@@ -14,7 +14,7 @@ async def on_ready():
         if guild.name == GUILD:
             break
 
-    print(
+    print( #prints if the bot is connected to the server
         f'{client.user} is connected to the following guild:\n'
         f'{guild.name}(id: {guild.id})'
     )
