@@ -15,9 +15,18 @@ async def on_ready():
             break
 
     print( #prints if the bot is connected to the server
-        f'{client.user} is connected to the following guild:\n'
+        f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
     )
+
+#New Member join
+@client.event
+async def on_member_join(member):
+    await member.create_dm()
+    await member.dm_channel.send(
+        f'Hi {member.name}, welcome to the GoldenDragons Discord server!'
+    )
+    
     
 client.run(TOKEN)
 
