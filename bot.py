@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN') #edit .env file
-GUILD = os.getenv("DICORD_GUILD")
+GUILD = os.getenv("DISCORD_GUILD")
 
 client = discord.Client()
 
