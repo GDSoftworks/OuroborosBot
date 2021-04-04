@@ -1,1 +1,0 @@
-# Ouroboros — Discord Bot
