@@ -23,9 +23,7 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     await member.create_dm()
-    await member.dm_channel.send(
-        f'Hi {member.name}, welcome to the GD Softworks Discord server!'
-    )
+    await member.dm_channel.send('Hi, welcome to the GD Softworks Discord server!')
     
     
 client.run(TOKEN)
