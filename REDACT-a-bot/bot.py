@@ -19,13 +19,13 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
-#New Member join
+#Automatically detect swearing
+with open("list.txt", "r") as list:
+    lines=list.readlines()
+
 @client.event
-async def on_member_join(member):
-    await member.create_dm()
-    await member.dm_channel.send(
-        f'Hi {member.name}, welcome to my Discord server!'
-    )
+async def on_message(message):
+    if message.content.includes(lines):
 
 
 client.run(TOKEN)
