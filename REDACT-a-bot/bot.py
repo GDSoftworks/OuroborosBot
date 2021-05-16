@@ -19,19 +19,29 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
-#Reads in swear list
-with open("list.txt", "r") as swear_list:
-    swears=swear_list.readlines()
 
+with open("list.txt", "r") as swear_list:
+    swear_list=swear_list.readlines()
+    for swear in range(len(swear_list)):
+        #swear = swear.replace("\n", "")
+        swear = swear_list[swear].replace("\n", '')
+        cleaned_list = []
+        cleaned_list.append(swear)
+
+
+
+"""
 #Detects and removes swears
 @client.event
 async def on_message(ctx, message):
-    msg = message.content
+    global swears
+    msg = message.content.lower()
     for word in swears:
         if word in msg:
             await message.delete()
-            await ctx.send("Dont use that word 🙊! This is a warning")
+            await message.channel.send("Dont use that word 🙊! This is a warning")
     await ctx.process_message(message)
 
 
 client.run(TOKEN)
+"""
