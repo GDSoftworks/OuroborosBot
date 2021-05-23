@@ -1,10 +1,7 @@
 import discord
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN') #edit .env file
-GUILD = os.getenv("DISCORD_GUILD")
+TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
+GUILD = "OuroborosBot Testing"
 
 client = discord.Client()
 
