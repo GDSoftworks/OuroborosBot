@@ -35,7 +35,7 @@ async def on_message(message):
         if word in msg:
             await message.delete()
             await message.channel.send("Dont use that word 🙊! This is a warning")
-    await ctx.process_message(message)
+    #await ctx.process_message(message)
 
 
 client.run(TOKEN)
