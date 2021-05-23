@@ -19,16 +19,15 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
-
+cleaned_list = []
 with open("list.txt", "r") as swear_list:
     swear_list=swear_list.readlines()
     for swear in range(len(swear_list)):
         #swear = swear.replace("\n", "")
         swear = swear_list[swear].replace("\n", '')
-        cleaned_list = []
         cleaned_list.append(swear)
 
-
+#print(cleaned_list)
 
 """
 #Detects and removes swears
