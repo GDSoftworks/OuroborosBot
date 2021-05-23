@@ -25,12 +25,13 @@ with open("list.txt", "r") as swear_list:
 
 #Detects and removes swears
 @client.event
-async def on_message(ctx, message):
+async def on_message(message):
     msg = message.content
     for word in swears:
         if word in msg:
             await message.delete()
             await ctx.send("Dont use that word 🙊! This is a warning")
+    #I have no idea why this works...
     await ctx.process_message(message)
 
 
