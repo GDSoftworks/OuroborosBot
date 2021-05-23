@@ -1,10 +1,7 @@
 import discord
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN') #edit .env file
-GUILD = os.getenv("DISCORD_GUILD")
+TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
+GUILD = "OuroborosBot Testing"
 
 client = discord.Client()
 
@@ -19,18 +16,25 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
-#Reads in swear list
+cleaned_list = []
 with open("list.txt", "r") as swear_list:
-    swears=swear_list.readlines()
+    swear_list=swear_list.readlines()
+    for swear in range(len(swear_list)):
+        #swear = swear.replace("\n", "")
+        swear = swear_list[swear].replace("\n", '')
+        cleaned_list.append(swear)
+
+#print(cleaned_list)
+
 
 #Detects and removes swears
 @client.event
-async def on_message(ctx, message):
-    msg = message.content
-    for word in swears:
+async def on_message(message):
+    msg = message.content.lower()
+    for word in cleaned_list:
         if word in msg:
             await message.delete()
-            await ctx.send("Dont use that word 🙊! This is a warning")
+            await message.channel.send("Dont use that word 🙊! This is a warning")
     await ctx.process_message(message)
 
 
