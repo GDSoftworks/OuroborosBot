@@ -26,13 +26,12 @@ with open("list.txt", "r") as swear_list:
 
 #print(cleaned_list)
 
-"""
+
 #Detects and removes swears
 @client.event
-async def on_message(ctx, message):
-    global swears
+async def on_message(message):
     msg = message.content.lower()
-    for word in swears:
+    for word in cleaned_list:
         if word in msg:
             await message.delete()
             await message.channel.send("Dont use that word 🙊! This is a warning")
@@ -40,4 +39,3 @@ async def on_message(ctx, message):
 
 
 client.run(TOKEN)
-"""
