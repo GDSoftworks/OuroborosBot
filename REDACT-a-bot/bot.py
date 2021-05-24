@@ -34,7 +34,7 @@ async def on_message(message):
     msg = message.content.lower()
     for word in cleaned_list:
         if word in msg:
-            recorded_swears += 1
+            ++recorded_swears
             print("Number of swears recorded: ",recorded_swears)
             await message.delete()
             await message.channel.send("Dont use that word 🙊! This is a warning")
