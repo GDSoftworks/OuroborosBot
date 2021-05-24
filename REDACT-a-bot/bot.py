@@ -26,6 +26,7 @@ with open("list.txt", "r") as swear_list:
 
 #print(cleaned_list)
 
+recorded_swears = 0
 
 #Detects and removes swears
 @client.event
@@ -33,6 +34,8 @@ async def on_message(message):
     msg = message.content.lower()
     for word in cleaned_list:
         if word in msg:
+            recorded_swears += 1
+            print("Number of swears recorded: ",recorded_swears)
             await message.delete()
             await message.channel.send("Dont use that word 🙊! This is a warning")
     #await ctx.process_message(message)
