@@ -4,6 +4,7 @@ TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
 GUILD = "OuroborosBot Testing"
 
 client = discord.Client()
+    
 
 @client.event
 async def on_ready():
@@ -25,18 +26,20 @@ with open("list.txt", "r") as swear_list:
         cleaned_list.append(swear)
 
 #print(cleaned_list)
-
+# user = ""
 recorded_swears = 0
+# counter = {user: recorded_swears}
 
 #Detects and removes swears
 @client.event
 async def on_message(message):
     global recorded_swears
     msg = message.content.lower()
+    author = message.author
     for word in cleaned_list:
         if word in msg:
             recorded_swears = recorded_swears + 1
-            print("Number of swears recorded: ",recorded_swears)
+            print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
             await message.channel.send("Dont use that word 🙊! This is a warning")
     #await ctx.process_message(message)
