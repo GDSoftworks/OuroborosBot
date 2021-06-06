@@ -1,11 +1,10 @@
 import discord
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
 GUILD = "OuroborosBot Testing"
 
 client = discord.Client()
-translator = Translator()    
 
 @client.event
 async def on_ready():
@@ -37,10 +36,11 @@ async def on_message(message):
     global recorded_swears
     msg = message.content.lower()
     author = message.author
-    
-    print(translator.translate(text=msg))
+    translated = GoogleTranslator(source='auto', target='en').translate(msg)
+    translated_msg = translated.lower()
+    #print(translated)
     for word in cleaned_list:
-        if word in msg:
+        if word in translated_msg:
             recorded_swears = recorded_swears + 1
             print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
