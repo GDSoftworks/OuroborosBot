@@ -1,10 +1,11 @@
 import discord
+from googletrans import Translator
 
 TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
 GUILD = "OuroborosBot Testing"
 
 client = discord.Client()
-    
+translator = Translator()    
 
 @client.event
 async def on_ready():
@@ -36,6 +37,8 @@ async def on_message(message):
     global recorded_swears
     msg = message.content.lower()
     author = message.author
+    
+    print(translator.translate(text=msg))
     for word in cleaned_list:
         if word in msg:
             recorded_swears = recorded_swears + 1
