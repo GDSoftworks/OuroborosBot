@@ -1,8 +1,8 @@
 import discord
 from deep_translator import GoogleTranslator
 
-TOKEN = "ODI4MjE4Nzk3ODQzNDE1MDcy.YGmY3A.PhHu5rNxzf1aAEWNech6eFkhw1M"
-GUILD = "OuroborosBot Testing"
+TOKEN = (open("TOKEN", "r")).readline()
+GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
