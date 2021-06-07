@@ -44,7 +44,7 @@ async def on_message(message):
             recorded_swears = recorded_swears + 1
             print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
-            await message.channel.send("Dont use that word 🙊! This is a warning")
+            await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
     #await ctx.process_message(message)
 
 
