@@ -45,7 +45,15 @@ async def on_message(message):
             print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
             await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
-    #await ctx.process_message(message)
+            await log_output(author, recorded_swears)
+            
+log_channel_id = 852202389896560650
 
+async def log_output(author, recorded_swears):
+    channel = client.get_channel(log_channel_id)
+    author = str(author)
+    recorded_swears = str(recorded_swears)
+    logmsg="Number of swears recorded for: {0} = {1}"
+    await channel.send(logmsg.format(author, recorded_swears))
 
 client.run(TOKEN)
