@@ -48,8 +48,7 @@ async def on_message(message):
             if recorded_swears >= warning_count:
                 await message.channel.send(message.author.mention+" This is your last warning, you will be kicked")
                 if recorded_swears >= kick_count:
-                    await message.channel.send(message.author.mention+" You will be kicked in 10 seconds")
-                    sleep(10)
+                    await message.channel.send(message.author.mention+" You will be kicked promptly")
                     print("Kicked")
                     await log_kick(author, recorded_swears)
 
@@ -65,11 +64,11 @@ async def log_output(author, recorded_swears):
 
 async def log_kick(author, recorded_swears):
     channel = client.get_channel(log_channel_id)
-    author = str(author)
+    author_name = str(author)
     recorded_swears = str(recorded_swears)
     logmsg="Kicked {0}, {0} has used swears for {1} times"
-    await channel.send(logmsg.format(author, recorded_swears))
+    await channel.send(logmsg.format(author_name, recorded_swears))
     #Uncomment to enable kick
-    #await discord.Guild.kick(author)
+    await author.kick()
     
 client.run(TOKEN)
