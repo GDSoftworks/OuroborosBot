@@ -7,6 +7,32 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
+reputation = 0
+
+async def award_rep(awarder, awarded, amount):
+    global reputation
+    if amount > 0:
+        print(awarder.mention + " has awarded " + awarded.mention + " " + str(amount) + " reputation.")
+    if amount == 0:
+        print(awarder.mention + " you can't award 0 reputation.")
+    if amount < 0:
+        print(awarder.mention + " has decreased " + awarded.mention + "'s reputation by " + str(amount) + ".")
+    reputation += amount
+
+    # state TIER
+    if reputation < -20:
+        print(awarded.mention + " is now in the 'INFAMOUS' tier.")
+    elif reputation < 10:
+        print(awarded.mention + " is now in the 'NEWBIE' tier.")
+    elif reputation < 30:
+        print(awarded.mention + " is now in the 'POPULAR' tier.'")
+    elif reputation < 50:
+        print(awarded.mention + " is now in the 'NOBLE' tier.")
+    elif reputation < 70:
+        print(awarded.mention + " is now in the 'EMPORER' tier.")
+    else:
+        print(awarded.mention + " is now in the 'DRAGON' tier.")
+        
 @client.event
 async def on_ready():
     for guild in client.guilds:
@@ -54,7 +80,7 @@ async def on_message(message):
 
            
 log_channel_id = 852202389896560650
-#send message ti logging channel
+#send message to logging channel
 async def log_output(author, recorded_swears):
     channel = client.get_channel(log_channel_id)
     author = str(author)
@@ -68,7 +94,7 @@ async def log_kick(author, recorded_swears):
     recorded_swears = str(recorded_swears)
     logmsg="Kicked {0}, {0} has used swears for {1} times"
     await channel.send(logmsg.format(author_name, recorded_swears))
-    #Uncomment to enable kick
+    #(Un)comment to enable/disable kick
     await author.kick()
     
 client.run(TOKEN)
