@@ -1,4 +1,5 @@
 import discord
+from discord.permissions import augment_from_permissions
 from deep_translator import GoogleTranslator
 from time import sleep
 
@@ -7,32 +8,34 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
-reputation = 0
-
-async def award_rep(awarder, awarded, amount):
-    global reputation
-    if amount > 0:
-        print(awarder.mention + " has awarded " + awarded.mention + " " + str(amount) + " reputation.")
-    if amount == 0:
-        print(awarder.mention + " you can't award 0 reputation.")
-    if amount < 0:
-        print(awarder.mention + " has decreased " + awarded.mention + "'s reputation by " + str(amount) + ".")
-    reputation += amount
-
-    # state TIER
-    if reputation < -20:
-        print(awarded.mention + " is now in the 'INFAMOUS' tier.")
-    elif reputation < 10:
-        print(awarded.mention + " is now in the 'NEWBIE' tier.")
-    elif reputation < 30:
-        print(awarded.mention + " is now in the 'POPULAR' tier.'")
-    elif reputation < 50:
-        print(awarded.mention + " is now in the 'NOBLE' tier.")
-    elif reputation < 70:
-        print(awarded.mention + " is now in the 'EMPORER' tier.")
-    else:
-        print(awarded.mention + " is now in the 'DRAGON' tier.")
+class User(discord.Member):
+    
+    def __init__(self, rep, rank):
+        discord.Member.__init__(self, name, roles)
+        self.rep = rep
+        self.rank = rank
+    
+    def add_rep(self, amount):
+        User.rep += amount
+        return User.rep
+    
+    def remove_rep(self, amount):
+        User.rep -= amount
+        return User.rep
         
+    def rank(self):
+        if User.rep >= 10:
+            rank = "Newbie"
+        elif User.rep >= 20:
+            rank = "Member"
+        elif User.rep >= 30:
+            rank = "Regular"
+        elif User.rep >= 50:
+            rank = "Elder"
+        elif User.rep >= 80:
+            rank = "Guru"
+        return rank
+            
 @client.event
 async def on_ready():
     for guild in client.guilds:
