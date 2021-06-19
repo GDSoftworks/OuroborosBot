@@ -1,5 +1,5 @@
 import discord
-from discord.permissions import augment_from_permissions
+from discord.ext.commands import bot
 from deep_translator import GoogleTranslator
 from time import sleep
 
@@ -8,31 +8,32 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
-class User(discord.Member):
-    
-    def __init__(self, rep, rank):
-        discord.Member.__init__(self, name, roles)
+class Member(discord.Member):
+        
+    def __init__(self,rep,rank):
+        super().__init__(self, name, roles)
         self.rep = rep
         self.rank = rank
+        pass
     
     def add_rep(self, amount):
-        User.rep += amount
-        return User.rep
+        Member.rep += amount
+        return Member.rep
     
     def remove_rep(self, amount):
-        User.rep -= amount
-        return User.rep
+        Member.rep -= amount
+        return Member.rep
         
-    def rank(self):
-        if User.rep >= 10:
+    def rank(self, rep):
+        if rep >= 10:
             rank = "Newbie"
-        elif User.rep >= 20:
+        elif rep >= 20:
             rank = "Member"
-        elif User.rep >= 30:
+        elif rep >= 30:
             rank = "Regular"
-        elif User.rep >= 50:
+        elif rep >= 50:
             rank = "Elder"
-        elif User.rep >= 80:
+        elif rep >= 80:
             rank = "Guru"
         return rank
             
@@ -60,8 +61,7 @@ warning_count = 9
 kick_count = 10
 
 #Detects and removes swears
-@client.event
-async def on_message(message):
+async def detect_swear(message):
     global recorded_swears
     msg = message.content.lower()
     author = message.author
@@ -99,5 +99,25 @@ async def log_kick(author, recorded_swears):
     await channel.send(logmsg.format(author_name, recorded_swears))
     #(Un)comment to enable/disable kick
     await author.kick()
+
+async def award_rep(message):
+    rep = 0
+    if message.content.startswith("!award_rep"):
+        msg = message.content
+        words = msg.split(' ')
+        name = words[1]
+        rep += int(words[2])
+        message.author = Member()
+        await message.channel.send("Awarded {0} {1} reputation! {2} now has {3} reputation.".format(name, str(words[2]), name, Member.rep))
+
+    else:
+        print("Not command")
+
+                                     
+@client.event
+async def on_message(message):
+    await detect_swear(message)
+    await award_rep(message)
+
     
 client.run(TOKEN)
