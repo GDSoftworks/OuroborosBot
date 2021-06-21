@@ -1,42 +1,13 @@
 import discord
-from discord.ext.commands import bot
 from deep_translator import GoogleTranslator
 from time import sleep
-
+import jellyfish
+import multiprocessing
 TOKEN = (open("TOKEN", "r")).readline()
 GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
-class Member(discord.Member):
-        
-    def __init__(self,rep,rank):
-        super().__init__(self, name, roles)
-        self.rep = rep
-        self.rank = rank
-        pass
-    
-    def add_rep(self, amount):
-        Member.rep += amount
-        return Member.rep
-    
-    def remove_rep(self, amount):
-        Member.rep -= amount
-        return Member.rep
-        
-    def rank(self, rep):
-        if rep >= 10:
-            rank = "Newbie"
-        elif rep >= 20:
-            rank = "Member"
-        elif rep >= 30:
-            rank = "Regular"
-        elif rep >= 50:
-            rank = "Elder"
-        elif rep >= 80:
-            rank = "Guru"
-        return rank
-            
 @client.event
 async def on_ready():
     for guild in client.guilds:
@@ -59,6 +30,18 @@ with open("list.txt", "r") as swear_list:
 recorded_swears = 0
 warning_count = 9
 kick_count = 10
+
+def most_frequent(List):
+    counter = 0
+    num = List[0]
+      
+    for i in List:
+        curr_frequency = List.count(i)
+        if(curr_frequency> counter):
+            counter = curr_frequency
+            num = i
+  
+    return num
 
 #Detects and removes swears
 async def detect_swear(message):
@@ -100,18 +83,22 @@ async def log_kick(author, recorded_swears):
     #(Un)comment to enable/disable kick
     await author.kick()
 
-async def award_rep(message):
-    rep = 0
-    if message.content.startswith("!award_rep"):
-        msg = message.content
-        words = msg.split(' ')
-        name = words[1]
-        rep += int(words[2])
-        message.author = Member()
-        await message.channel.send("Awarded {0} {1} reputation! {2} now has {3} reputation.".format(name, str(words[2]), name, Member.rep))
-
-    else:
-        print("Not command")
+authorlist = []
+async def detect_spam(message):
+    messages = await message.channel.history(limit=10).flatten()
+    async for elem in message.channel.history(limit=15):
+        elem.author.append(authorlist)
+    if jellyfish.levenshtein_distance(messages) <= 2:
+        author = most_frequent(authorlist)
+        await author.kick(reason="Spamming")
+        await message.channel.send("Kicked {0} for spamming.".format(author.name))
+        if jellyfish.levenshtein_distance(messages) <= 4:
+            await message.channel.slowmode_delay(30)
+            await message.channel.send("Possible Spam detected! Enabling slowmode. Slowmode will end in 10 minutes")
+            slowmode_timer = multiprocessing.Process(target=sleep(600))
+            slowmode_timer.start()
+    
+    
 
                                      
 @client.event
