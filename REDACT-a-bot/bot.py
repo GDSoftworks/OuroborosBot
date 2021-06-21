@@ -104,7 +104,5 @@ async def detect_spam(message):
 @client.event
 async def on_message(message):
     await detect_swear(message)
-    await award_rep(message)
-
     
 client.run(TOKEN)
