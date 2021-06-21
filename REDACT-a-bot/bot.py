@@ -1,6 +1,7 @@
 import discord
 from deep_translator import GoogleTranslator
-from time import sleep
+import time
+import datetime
 
 TOKEN = (open("TOKEN", "r")).readline()
 GUILD = (open("GUILD", "r")).readline()
@@ -30,9 +31,20 @@ recorded_swears = 0
 warning_count = 9
 kick_count = 10
 
+def most_frequent(List):
+    counter = 0
+    num = List[0]
+      
+    for i in List:
+        curr_frequency = List.count(i)
+        if(curr_frequency> counter):
+            counter = curr_frequency
+            num = i
+  
+    return num
+
 #Detects and removes swears
-@client.event
-async def on_message(message):
+async def detect_swear(message):
     global recorded_swears
     msg = message.content.lower()
     author = message.author
@@ -54,7 +66,7 @@ async def on_message(message):
 
            
 log_channel_id = 852202389896560650
-#send message ti logging channel
+#send message to logging channel
 async def log_output(author, recorded_swears):
     channel = client.get_channel(log_channel_id)
     author = str(author)
@@ -68,7 +80,51 @@ async def log_kick(author, recorded_swears):
     recorded_swears = str(recorded_swears)
     logmsg="Kicked {0}, {0} has used swears for {1} times"
     await channel.send(logmsg.format(author_name, recorded_swears))
-    #Uncomment to enable kick
+    #(Un)comment to enable/disable kick
     await author.kick()
+
+time_window_milliseconds = 7000
+max_msg_per_window = 4
+author_msg_times = {}
+
+async def detect_spam(message):
+    global author_msg_counts
+
+    author_id = message.author.id
+    author = message.author
+    # Get current epoch time in milliseconds
+    curr_time = datetime.datetime.now().timestamp() * 1000
+
+    # Make empty list for author id, if it does not exist
+    if not author_msg_times.get(author_id, False):
+        author_msg_times[author_id] = []
+
+    # Append the time of this message to the users list of message times
+    author_msg_times[author_id].append(curr_time)
+
+    # Find the beginning of our time window.
+    expr_time = curr_time - time_window_milliseconds
+
+    # Find message times which occurred before the start of our window
+    expired_msgs = [
+        msg_time for msg_time in author_msg_times[author_id]
+        if msg_time < expr_time
+    ]
+
+    # Remove all the expired messages times from our list
+    for msg_time in expired_msgs:
+        author_msg_times[author_id].remove(msg_time)
+    # ^ note: we probably need to use a mutex here. Multiple threads
+    # might be trying to update this at the same time. Not sure though.
+
+    if len(author_msg_times[author_id]) > max_msg_per_window:
+        await message.channel.send(author.mention+" Stop Spamming")
+        await message.delete()
+    
+                                     
+@client.event
+async def on_message(message):
+    await detect_swear(message)
+    await detect_spam(message)
     
 client.run(TOKEN)
