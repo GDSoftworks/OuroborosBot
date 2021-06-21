@@ -83,14 +83,15 @@ async def log_kick(author, recorded_swears):
     #(Un)comment to enable/disable kick
     await author.kick()
 
-time_window_milliseconds = 5000
-max_msg_per_window = 5
+time_window_milliseconds = 7000
+max_msg_per_window = 4
 author_msg_times = {}
 
 async def detect_spam(message):
     global author_msg_counts
 
     author_id = message.author.id
+    author = message.author
     # Get current epoch time in milliseconds
     curr_time = datetime.datetime.now().timestamp() * 1000
 
@@ -117,8 +118,8 @@ async def detect_spam(message):
     # might be trying to update this at the same time. Not sure though.
 
     if len(author_msg_times[author_id]) > max_msg_per_window:
-        await message.channel.send("Stop Spamming")
-        print("Spam detected")
+        await message.channel.send(author.mention+" Stop Spamming")
+        await message.delete()
     
                                      
 @client.event
