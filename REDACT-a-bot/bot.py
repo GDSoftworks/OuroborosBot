@@ -31,18 +31,6 @@ recorded_swears = 0
 warning_count = 9
 kick_count = 10
 
-def most_frequent(List):
-    counter = 0
-    num = List[0]
-      
-    for i in List:
-        curr_frequency = List.count(i)
-        if(curr_frequency> counter):
-            counter = curr_frequency
-            num = i
-  
-    return num
-
 #Detects and removes swears
 async def detect_swear(message):
     global recorded_swears
