@@ -13,6 +13,12 @@ client = discord.Client()
 # users = sqlite3.connect(':users.db')
 users = sqlite3.connect(':memory:')
 cursor = users.cursor()
+#Creates the table
+cursor.execute("""CREATE TABLE users (
+            user text,
+            reputation text,
+            badpoints integer
+            )""")
 
 @client.event
 async def on_ready():
@@ -131,12 +137,6 @@ async def detect_spam(message):
         await send_dm(message.author, "Stop Spamming")
         await message.delete()
 
-cursor.execute("""CREATE TABLE users (
-            user text,
-            reputation text,
-            badpoints integer
-            )""")
-
 def count_arguments(commandstr):
     argumentlist = commandstr.split(" ")
     return len(argumentlist)-1
@@ -194,10 +194,9 @@ async def remove_user(username):
         cursor.execute("DELETE from users WHERE username = :username",
                   {'username': username})
 
-@client.event
-async def on_message(message):
-    if message.content.startswith("!register"):
-        if count_arguments(message.content) == 3:
+async def detect_command(message):
+        if message.content.startswith("!register"):
+            if count_arguments(message.content) == 3:
             command, user, reputation, badpoints  = message.content.split(" ")
             await register_user(user, reputation, badpoints)
             await message.channel.send("User {} registered!".format(user))
@@ -205,24 +204,27 @@ async def on_message(message):
             string = ("Missing arguments. !register <user> <reputation> <badpoints>")
             string += (". Number of arguments given " + str(count_arguments(message.content)) + "/3.")
             await message.channel.send(string)
-    if message.content.startswith("!change_rep"):
-        command, user, reputation = message.content.split(" ")
-        await update_reputation(user, reputation, message)
-        await print_info(user, 1, message)
-    if message.content.startswith("!change_bad"):
-        command, user, badpoints = message.content.split(" ")
-        await update_badpoints(user, badpoints, message)
-        await print_info(user, 2, message)
-    if message.content.startswith("!unregister"):
-        command, user = message.content.split(" ")
-        await remove_user(user)
-        await message.channel.send("User {} unregistered!".format(user))
-    if message.content.startswith("!info"):
-        command, user = message.content.split(" ")
-        await print_info(user, 1, message)
-        await print_info(user, 2, message)
+        if message.content.startswith("!change_rep"):
+            command, user, reputation = message.content.split(" ")
+            await update_reputation(user, reputation, message)
+            await print_info(user, 1, message)
+        if message.content.startswith("!change_bad"):
+            command, user, badpoints = message.content.split(" ")
+            await update_badpoints(user, badpoints, message)
+            await print_info(user, 2, message)
+        if message.content.startswith("!unregister"):
+            command, user = message.content.split(" ")
+            await remove_user(user)
+            await message.channel.send("User {} unregistered!".format(user))
+        if message.content.startswith("!info"):
+            command, user = message.content.split(" ")
+            await print_info(user, 1, message)
+            await print_info(user, 2, message)
 
+@client.event
+async def on_message(message):
     await detect_swear(message)
     await detect_spam(message)
+    await detect_command(message)
     
 client.run(TOKEN)
