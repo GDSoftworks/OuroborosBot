@@ -43,18 +43,6 @@ recorded_swears = 0
 warning_count = 9
 kick_count = 10
 
-def most_frequent(List):
-    counter = 0
-    num = List[0]
-      
-    for i in List:
-        curr_frequency = List.count(i)
-        if(curr_frequency> counter):
-            counter = curr_frequency
-            num = i
-  
-    return num
-
 #Detects and removes swears
 async def detect_swear(message):
     global recorded_swears
@@ -195,8 +183,8 @@ async def remove_user(username):
                   {'username': username})
 
 async def detect_command(message):
-        if message.content.startswith("!register"):
-            if count_arguments(message.content) == 3:
+    if message.content.startswith("!register"):
+        if count_arguments(message.content) == 3:
             command, user, reputation, badpoints  = message.content.split(" ")
             await register_user(user, reputation, badpoints)
             await message.channel.send("User {} registered!".format(user))
@@ -204,23 +192,23 @@ async def detect_command(message):
             string = ("Missing arguments. !register <user> <reputation> <badpoints>")
             string += (". Number of arguments given " + str(count_arguments(message.content)) + "/3.")
             await message.channel.send(string)
-        if message.content.startswith("!change_rep"):
-            command, user, reputation = message.content.split(" ")
-            await update_reputation(user, reputation, message)
-            await print_info(user, 1, message)
-        if message.content.startswith("!change_bad"):
-            command, user, badpoints = message.content.split(" ")
-            await update_badpoints(user, badpoints, message)
-            await print_info(user, 2, message)
-        if message.content.startswith("!unregister"):
-            command, user = message.content.split(" ")
-            await remove_user(user)
-            await message.channel.send("User {} unregistered!".format(user))
-        if message.content.startswith("!info"):
-            command, user = message.content.split(" ")
-            await print_info(user, 1, message)
-            await print_info(user, 2, message)
-
+    if message.content.startswith("!change_rep"):
+        command, user, reputation = message.content.split(" ")
+        await update_reputation(user, reputation, message)
+        await print_info(user, 1, message)
+    if message.content.startswith("!change_bad"):
+        command, user, badpoints = message.content.split(" ")
+        await update_badpoints(user, badpoints, message)
+        await print_info(user, 2, message)
+    if message.content.startswith("!unregister"):
+        command, user = message.content.split(" ")
+        await remove_user(user)
+        await message.channel.send("User {} unregistered!".format(user))
+    if message.content.startswith("!info"):
+        command, user = message.content.split(" ")
+        await print_info(user, 1, message)
+        await print_info(user, 2, message)
+        
 @client.event
 async def on_message(message):
     await detect_swear(message)
