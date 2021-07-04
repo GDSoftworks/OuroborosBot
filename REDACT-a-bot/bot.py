@@ -19,6 +19,10 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
+async def send_dm(member: discord.Member, content):
+    channel = await member.create_dm()
+    await channel.send(content)
+    
 #Reads in list of swears
 cleaned_list = []
 with open("list.txt", "r") as swear_list:
@@ -44,6 +48,7 @@ async def detect_swear(message):
             print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
             await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
+            await send_dm(message.author, "Please do not swear, this is prohibited on this server.")
             await log_output(author, recorded_swears)
             if recorded_swears >= warning_count:
                 await message.channel.send(message.author.mention+" This is your last warning, you will be kicked")
@@ -106,7 +111,7 @@ async def detect_spam(message):
     # might be trying to update this at the same time. Not sure though.
 
     if len(author_msg_times[author_id]) > max_msg_per_window:
-        await message.channel.send(author.mention+" Stop Spamming")
+        await send_dm(message.author, "Stop Spamming")
         await message.delete()
     
                                      
