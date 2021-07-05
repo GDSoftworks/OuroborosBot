@@ -8,14 +8,6 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
-users = sqlite3.connect(':memory:')
-cursor = users.cursor()
-#Creates the table
-cursor.execute("""CREATE TABLE users (
-            userid integer,
-            badpoints integer
-            )""")
-
 @client.event
 async def on_ready():
     for guild in client.guilds:
@@ -121,6 +113,14 @@ async def detect_spam(message):
     if len(author_msg_times[author_id]) > max_msg_per_window:
         await send_dm(message.author, "Stop Spamming")
         await message.delete()
+
+users = sqlite3.connect(':memory:')
+cursor = users.cursor()
+#Creates the table
+cursor.execute("""CREATE TABLE users (
+            userid integer,
+            badpoints integer
+            )""")
 
 async def get_members():
     members = await discord.Guild.fetch_members().flatten()
