@@ -114,6 +114,10 @@ async def detect_spam(message):
         await send_dm(message.author, "Stop Spamming")
         await message.delete()
 
+####################################
+# Start of SQL-related code #
+####################################
+
 users = sqlite3.connect(':memory:')
 cursor = users.cursor()
 #Creates the table
@@ -145,10 +149,14 @@ async def remove_user(userid):
     with users:
         cursor.execute("DELETE from users WHERE userid = :userid",
                   {'userid': userid})
+        
+####################################
+# End of SQL-related code #
+####################################
 
 async def detect_command(message):
-        if message.content.startswith('$hello'):
-            await message.channel.send('Hello!')
+        pass
+    # Rewrite needed
 
 @client.event
 async def on_message(message):
