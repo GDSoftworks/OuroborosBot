@@ -151,28 +151,42 @@ async def remove_user(userid):
 # End of SQL-related code #
 ####################################
 
+# Okay, this is inefficient and not clean
 async def detect_command(message):
-        if message.content.startswith("!register_user"):
-            msgcontent = message.content
-            user = message.mentions
-            user = user[0]
-            id = user.id
-            badpoints = int(re.search(r'\d+', msgcontent).group())
-            await register_user(id, badpoints)
-        elif message.content.startswith("!update_badpoints"):
-            msgcontent = message.content
-            user = message.mentions
-            user = user[0]
-            id = user.id
-            badpoints = badpoints = int(re.search(r'\d+', msgcontent).group())
-            await update_badpoints(id, badpoints)
+    if message.content.startswith("!register_user"):
+        msgcontent = message.content
+        user = message.mentions
+        user = user[0]
+        id = user.id
+        badpoints = int(re.search(r'\d+', msgcontent).group())
+        await register_user(id, badpoints)
+    elif message.content.startswith("!update_badpoints"):
+        msgcontent = message.content
+        user = message.mentions
+        user = user[0]
+        id = user.id
+        badpoints = badpoints = int(re.search(r'\d+', msgcontent).group())
+        await update_badpoints(id, badpoints)
+    elif message.content.startswith("!remove_user"):
+        msgcontent = message.content
+        user = message.mentions
+        user = user[0]
+        id = user.id
+        await remove_user(id)
+    else:
+        pass
+
+            
         
-    # Rewrite needed
+ # Rewrite needed
 
 @client.event
 async def on_message(message):
     await detect_swear(message)
     await detect_spam(message)
-    await detect_command(message)
+    try:
+        await detect_command(message)
+    except BaseException as e:
+        message.channel.send("Command Failed, Reason: {0}".format(e))
     
 client.run(TOKEN)
