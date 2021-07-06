@@ -2,6 +2,7 @@ import discord
 from deep_translator import GoogleTranslator
 import datetime
 import sqlite3
+import re
 
 TOKEN = (open("TOKEN", "r")).readline()
 GUILD = (open("GUILD", "r")).readline()
@@ -155,7 +156,14 @@ async def remove_user(userid):
 ####################################
 
 async def detect_command(message):
-        pass
+        if message.content.startswith("!register_user"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            id = user.id
+            badpoints = int(re.search(r'\d+', msgcontent).group())
+            await register_user(id, badpoints)
+        
     # Rewrite needed
 
 @client.event
