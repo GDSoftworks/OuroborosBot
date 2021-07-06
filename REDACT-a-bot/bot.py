@@ -127,10 +127,6 @@ cursor.execute("""CREATE TABLE users (
             badpoints integer
             )""")
 
-async def get_members():
-    members = await discord.Guild.fetch_members().flatten()
-    return members
-
 async def register_user(userid, badpoints):
     with users:
         cursor.execute("INSERT INTO users VALUES (:userid, :badpoints)",
@@ -163,6 +159,13 @@ async def detect_command(message):
             id = user.id
             badpoints = int(re.search(r'\d+', msgcontent).group())
             await register_user(id, badpoints)
+        elif message.content.startswith("!update_badpoints"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            id = user.id
+            badpoints = badpoints = int(re.search(r'\d+', msgcontent).group())
+            await update_badpoints(id, badpoints)
         
     # Rewrite needed
 
