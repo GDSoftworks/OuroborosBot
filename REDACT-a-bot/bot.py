@@ -158,24 +158,26 @@ async def detect_command(message):
         user = message.mentions
         user = user[0]
         id = user.id
-        badpoints = int(re.search(r'\d+', msgcontent).group())
+        chunks = re.split(' +', msgcontent)
+        badpoints = chunks[-1]
         await register_user(id, badpoints)#
-        await message.channel.send("User {0} registered!".format(message.mentions))
+        await message.channel.send("User {0} registered!".format(user.name))
     elif message.content.startswith("!update_badpoints"):
         msgcontent = message.content
         user = message.mentions
         user = user[0]
         id = user.id
-        badpoints = badpoints = int(re.search(r'\d+', msgcontent).group())
+        chunks = re.split(' +', msgcontent)
+        badpoints = chunks[-1]
         await update_badpoints(id, badpoints)
-        await message.channel.send("Updates badpoints for user {0}, added {1} badpoints.".format(message.mentions, badpoints))
+        await message.channel.send("Updates badpoints for user {0}, added {1} badpoints.".format(user.name, badpoints))
     elif message.content.startswith("!remove_user"):
         msgcontent = message.content
         user = message.mentions
         user = user[0]
         id = user.id
         await remove_user(id)
-        await message.channel.send("Removed user {0} from database.".format(message.mentions))
+        await message.channel.send("Removed user {0} from database.".format(user.name))
     else:
         pass
 
