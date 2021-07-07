@@ -187,11 +187,12 @@ async def detect_command(message):
 
 @client.event
 async def on_message(message):
-    await detect_swear(message)
-    await detect_spam(message)
-    try:
-        await detect_command(message)
-    except BaseException as e:
-        message.channel.send("Command Failed, Reason: {0}".format(e))
+    if message.author.bot != True: # Whitelists bots
+        await detect_swear(message)
+        await detect_spam(message)
+        try:
+            await detect_command(message)
+        except BaseException as e:
+            message.channel.send("Command Failed, Reason: {0}".format(e))
     
 client.run(TOKEN)
