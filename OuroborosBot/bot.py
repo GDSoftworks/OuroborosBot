@@ -131,12 +131,14 @@ async def register_user(userid, badpoints):
     with users:
         cursor.execute("INSERT INTO users VALUES (:userid, :badpoints)",
                        {'userid': userid, 'badpoints': badpoints})
+        users.commit()
 
 async def update_badpoints(userid, badpoints):
     with users:
         cursor.execute("""UPDATE users SET badpoints = :badpoints
                     WHERE userid = :userid""",
                   {'userid': userid, 'badpoints': badpoints})
+        users.commit()
         
 async def get_users_by_id(userid):
     cursor.execute("SELECT * FROM users WHERE userid=:user", {'user': userid})
@@ -146,7 +148,11 @@ async def remove_user(userid):
     with users:
         cursor.execute("DELETE from users WHERE userid = :userid",
                   {'userid': userid})
-        
+        users.commit()
+
+async def get_badpoints(userid):
+    with users:
+        cursor.execute("SELECT * FROM users WHERE userid=:user", {'user': userid})
 ####################################
 # End of SQL-related code #
 ####################################
