@@ -134,10 +134,14 @@ async def register_user(userid, badpoints):
         users.commit()
 
 async def update_badpoints(userid, badpoints):
+    curr_badpoints = await get_badpoints(userid)
+    curr_badpoints = int(curr_badpoints)
+    badpoints = int(badpoints)
+    new_badpoints = curr_badpoints+badpoints
     with users:
         cursor.execute("""UPDATE users SET badpoints = :badpoints
                     WHERE userid = :userid""",
-                  {'userid': userid, 'badpoints': badpoints})
+                  {'userid': userid, 'badpoints': new_badpoints})
         users.commit()
         
 async def get_users_by_id(userid):
@@ -194,7 +198,7 @@ async def detect_command(message):
         user = message.mentions
         user = user[0]
         id = user.id
-        await get_badpoints(id)
+        badpoints = await get_badpoints(id)
         await message.channel.send("Badpoints for user {0} is {1}".format(user.name, badpoints))
     else:
         pass
@@ -211,6 +215,6 @@ async def on_message(message):
         try:
             await detect_command(message)
         except BaseException as e:
-            message.channel.send("Command Failed, Reason: {0}".format(e))
+            await message.channel.send("Command Failed, Reason: {0}".format(e))
     
 client.run(TOKEN)
