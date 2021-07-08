@@ -153,11 +153,16 @@ async def remove_user(userid):
 async def get_badpoints(userid):
     with users:
         cursor.execute("SELECT * FROM users WHERE userid=:user", {'user': userid})
+        row = cursor.fetchone()
+        badpoints = row[1]
+        return badpoints
+        
 ####################################
 # End of SQL-related code #
 ####################################
 
 # Okay, this is inefficient and not clean
+
 async def detect_command(message):
     if message.content.startswith("!register_user"):
         msgcontent = message.content
@@ -184,6 +189,13 @@ async def detect_command(message):
         id = user.id
         await remove_user(id)
         await message.channel.send("Removed user {0} from database.".format(user.name))
+    elif message.content.startswith("!get_badpoints"):
+        msgcontent = message.content
+        user = message.mentions
+        user = user[0]
+        id = user.id
+        await get_badpoints(id)
+        await message.channel.send("Badpoints for user {0} is {1}".format(user.name, badpoints))
     else:
         pass
 
