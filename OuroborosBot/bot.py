@@ -9,9 +9,10 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
-
 @client.event
 async def on_ready():
+    discord.Intents.members = True
+
     for guild in client.guilds:
         if guild.name == GUILD:
             break
@@ -20,14 +21,27 @@ async def on_ready():
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
     )
-    discord.Intents.members = True
+    #registers all members on start
     members = await guild.fetch_members().flatten()
     for member in members:
         await register_user(member.id, 0)
     print("All members registered.")
 
-        
+#registers/removes member on join/leave
+@client.event
+async def on_member_join(member):
+    
+    discord.Intents.members = True
+    print(f'{member.name} has joined this server')
+    await register_user(member.id, 0)
 
+@client.event
+async def on_member_remove(member):
+    
+    discord.Intents.members = True
+    print(f'{member.name} has joined this server')
+    await remove_user(member.id)
+    
 #Reads in list of swears
 cleaned_list = []
 with open("list.txt", "r") as swear_list:
@@ -188,6 +202,8 @@ async def detect_command(message):
         badpoints = chunks[-1]
         await register_user(id, badpoints)#
         await message.channel.send("User {0} registered!".format(user.name))
+        newbp = await get_badpoints(id)
+        await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
     elif message.content.startswith("!update_badpoints"):
         msgcontent = message.content
         user = message.mentions
@@ -206,7 +222,9 @@ async def detect_command(message):
             await message.channel.send("Operation not specified, defaulting to add")
             operation = "add"
         await update_badpoints(id, badpoints, operation)
-        await message.channel.send("Updates badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
+        await message.channel.send("Updated badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
+        newbp = await get_badpoints(id)
+        await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
     elif message.content.startswith("!remove_user"):
         msgcontent = message.content
         user = message.mentions
