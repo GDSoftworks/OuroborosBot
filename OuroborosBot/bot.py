@@ -19,15 +19,11 @@ async def on_ready():
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
     )
-    await register_members()
-    
-# Auto register all users in guild
-
-async def register_members():
-    members = await discord.Guild.fetch_members(limit=150).flatten()
+    members = await guild.fetch_members().flatten()
     for member in members:
         register_user(member.id, 0)
     print("All members registered.")
+
         
 
 #Reads in list of swears
