@@ -1,4 +1,4 @@
-#!/home/david/Documents/OuroborosBot/REDACT-a-bot/bin/python3
+#!/home/david/Documents/OuroborosBot/OuroborosBot/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

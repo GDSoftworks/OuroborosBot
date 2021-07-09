@@ -249,7 +249,11 @@ async def detect_command(message):
 @client.event
 async def on_message(message):
     if message.author.bot != True: # Whitelists bots
-        await detect_swear(message)
+        try:
+            await detect_swear(message)
+        except deep_translator.exceptions.NotValidPayload:
+            pass
+            
         await detect_spam(message)
         try:
             await detect_command(message)
