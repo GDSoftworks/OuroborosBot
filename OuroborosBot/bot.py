@@ -19,8 +19,17 @@ async def on_ready():
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
     )
+    await register_members()
     
-    
+# Auto register all users in guild
+
+async def register_members():
+    members = await discord.Guild.fetch_members(limit=150).flatten()
+    for member in members:
+        register_user(member.id, 0)
+    print("All members registered.")
+        
+
 #Reads in list of swears
 cleaned_list = []
 with open("list.txt", "r") as swear_list:
@@ -133,11 +142,15 @@ async def register_user(userid, badpoints):
                        {'userid': userid, 'badpoints': badpoints})
         users.commit()
 
-async def update_badpoints(userid, badpoints):
+async def update_badpoints(userid, badpoints, operation):
     curr_badpoints = await get_badpoints(userid)
     curr_badpoints = int(curr_badpoints)
     badpoints = int(badpoints)
-    new_badpoints = curr_badpoints+badpoints
+    if operation == "add":
+        new_badpoints = curr_badpoints+badpoints
+    elif operation == "remove":
+        new_badpoints = curr_badpoints-badpoints        
+        
     with users:
         cursor.execute("""UPDATE users SET badpoints = :badpoints
                     WHERE userid = :userid""",
@@ -184,7 +197,15 @@ async def detect_command(message):
         id = user.id
         chunks = re.split(' +', msgcontent)
         badpoints = chunks[-1]
-        await update_badpoints(id, badpoints)
+        operation = badpoints[0]
+        if operation == "+":
+            operation = "add"
+        elif operation == "-":
+            operation = "remove"
+        elif operation != "+" or "-":
+            await message.channel.send("Operation not specified, defaulting to add")
+            operation = "add"
+        await update_badpoints(id, badpoints, operation)
         await message.channel.send("Updates badpoints for user {0}, added {1} badpoints.".format(user.name, badpoints))
     elif message.content.startswith("!remove_user"):
         msgcontent = message.content
