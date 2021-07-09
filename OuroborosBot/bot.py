@@ -9,6 +9,7 @@ GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
+
 @client.event
 async def on_ready():
     for guild in client.guilds:
@@ -19,9 +20,10 @@ async def on_ready():
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
     )
+    discord.Intents.members = True
     members = await guild.fetch_members().flatten()
     for member in members:
-        register_user(member.id, 0)
+        await register_user(member.id, 0)
     print("All members registered.")
 
         
@@ -196,13 +198,15 @@ async def detect_command(message):
         operation = badpoints[0]
         if operation == "+":
             operation = "add"
+            badpoints = badpoints[1:]
         elif operation == "-":
             operation = "remove"
+            badpoints = badpoints[1:]
         elif operation != "+" or "-":
             await message.channel.send("Operation not specified, defaulting to add")
             operation = "add"
         await update_badpoints(id, badpoints, operation)
-        await message.channel.send("Updates badpoints for user {0}, added {1} badpoints.".format(user.name, badpoints))
+        await message.channel.send("Updates badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
     elif message.content.startswith("!remove_user"):
         msgcontent = message.content
         user = message.mentions
