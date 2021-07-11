@@ -264,9 +264,6 @@ async def detect_command(message):
         pass
 
             
-        
- # Rewrite needed
-
 @client.event
 async def on_message(message):
     if message.author.bot != True: # Whitelists bots
