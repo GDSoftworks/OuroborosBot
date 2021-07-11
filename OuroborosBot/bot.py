@@ -101,10 +101,13 @@ async def send_dm(member: discord.Member, content):
 time_window_milliseconds = 7000
 max_msg_per_window = 4
 author_msg_times = {}
+max_spam_before_kick = 5
+spam_count = 0
 
 async def detect_spam(message):
     global author_msg_counts
-
+    global spam_count
+    
     author_id = message.author.id
     author = message.author
     # Get current epoch time in milliseconds
@@ -135,6 +138,11 @@ async def detect_spam(message):
     if len(author_msg_times[author_id]) > max_msg_per_window:
         await send_dm(message.author, "Stop Spamming")
         await message.delete()
+        spam_count = spam_count + 1
+        if spam_count > max_spam_before_kick:
+            author.kick()
+            message.channel.send("User {0} kicked for spamming.".format(author.name))
+    
 
 ####################################
 # Start of SQL-related code #
@@ -193,46 +201,50 @@ async def get_badpoints(userid):
 # Okay, this is inefficient and not clean
 
 async def detect_command(message):
-    if message.content.startswith("!register_user"):
-        msgcontent = message.content
-        user = message.mentions
-        user = user[0]
-        id = user.id
-        chunks = re.split(' +', msgcontent)
-        badpoints = chunks[-1]
-        await register_user(id, badpoints)#
-        await message.channel.send("User {0} registered!".format(user.name))
-        newbp = await get_badpoints(id)
-        await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
-    elif message.content.startswith("!update_badpoints"):
-        msgcontent = message.content
-        user = message.mentions
-        user = user[0]
-        id = user.id
-        chunks = re.split(' +', msgcontent)
-        badpoints = chunks[-1]
-        operation = badpoints[0]
-        if operation == "+":
-            operation = "add"
-            badpoints = badpoints[1:]
-        elif operation == "-":
-            operation = "remove"
-            badpoints = badpoints[1:]
-        elif operation != "+" or "-":
-            await message.channel.send("Operation not specified, defaulting to add")
-            operation = "add"
-        await update_badpoints(id, badpoints, operation)
-        await message.channel.send("Updated badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
-        newbp = await get_badpoints(id)
-        await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
-    elif message.content.startswith("!remove_user"):
-        msgcontent = message.content
-        user = message.mentions
-        user = user[0]
-        id = user.id
-        await remove_user(id)
-        await message.channel.send("Removed user {0} from database.".format(user.name))
-    elif message.content.startswith("!get_badpoints"):
+    if message.author.guild_permissions.ban_members: # Limits command to privledged members
+        if message.content.startswith("!register_user"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            id = user.id
+            chunks = re.split(' +', msgcontent)
+            badpoints = chunks[-1]
+            await register_user(id, badpoints)#
+            await message.channel.send("User {0} registered!".format(user.name))
+            newbp = await get_badpoints(id)
+            await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
+        elif message.content.startswith("!update_badpoints"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            id = user.id
+            chunks = re.split(' +', msgcontent)
+            badpoints = chunks[-1]
+            operation = badpoints[0]
+            if operation == "+":
+                operation = "add"
+                badpoints = badpoints[1:]
+            elif operation == "-":
+                operation = "remove"
+                badpoints = badpoints[1:]
+            elif operation != "+" or "-":
+                await message.channel.send("Operation not specified, defaulting to add")
+                operation = "add"
+            await update_badpoints(id, badpoints, operation)
+            await message.channel.send("Updated badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
+            newbp = await get_badpoints(id)
+            await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
+        elif message.content.startswith("!remove_user"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            id = user.id
+            await remove_user(id)
+            await message.channel.send("Removed user {0} from database.".format(user.name))
+        else:
+            pass
+        
+    if message.content.startswith("!get_badpoints"):
         msgcontent = message.content
         user = message.mentions
         user = user[0]
