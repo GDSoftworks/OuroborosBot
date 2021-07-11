@@ -201,6 +201,7 @@ async def get_badpoints(userid):
 # Okay, this is inefficient and not clean
 
 async def detect_command(message):
+    command_exec = None
     if message.author.guild_permissions.ban_members: # Limits command to privledged members
         if message.content.startswith("!register_user"):
             msgcontent = message.content
@@ -213,6 +214,7 @@ async def detect_command(message):
             await message.channel.send("User {0} registered!".format(user.name))
             newbp = await get_badpoints(id)
             await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
+            command_exec = True
         elif message.content.startswith("!update_badpoints"):
             msgcontent = message.content
             user = message.mentions
@@ -234,6 +236,7 @@ async def detect_command(message):
             await message.channel.send("Updated badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
             newbp = await get_badpoints(id)
             await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
+            command_exec = True
         elif message.content.startswith("!remove_user"):
             msgcontent = message.content
             user = message.mentions
@@ -241,9 +244,15 @@ async def detect_command(message):
             id = user.id
             await remove_user(id)
             await message.channel.send("Removed user {0} from database.".format(user.name))
+            command_exec = True
         else:
             pass
-        
+    elif message.author.guild_permissions.ban_members == False and command_exec == True:
+        message.channel.send("Insufficient permissions to execute command!")
+    else:
+        pass
+    
+    #Public get_badpoints command
     if message.content.startswith("!get_badpoints"):
         msgcontent = message.content
         user = message.mentions
