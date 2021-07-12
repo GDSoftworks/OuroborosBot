@@ -266,16 +266,16 @@ async def detect_command(message):
             
 @client.event
 async def on_message(message):
-    if message.author.bot != True: # Whitelists bots
+    if message.author.bot != True or message.author.guild_permissions.administrator: # Whitelists bots and admins
         try:
             await detect_swear(message)
         except deep_translator.exceptions.NotValidPayload:
             pass
             
         await detect_spam(message)
-        try:
-            await detect_command(message)
-        except BaseException as e:
-            await message.channel.send("Command Failed, Reason: {0}".format(e))
+    try:
+        await detect_command(message)
+    except BaseException as e:
+        await message.channel.send("Command Failed, Reason: {0}".format(e))
     
 client.run(TOKEN)
