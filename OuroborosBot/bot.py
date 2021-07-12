@@ -39,7 +39,7 @@ async def on_member_join(member):
 async def on_member_remove(member):
     
     discord.Intents.members = True
-    print(f'{member.name} has joined this server')
+    print(f'{member.name} has left this server')
     await remove_user(member.id)
     
 #Reads in list of swears
