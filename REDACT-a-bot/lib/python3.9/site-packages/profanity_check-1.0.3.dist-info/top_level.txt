@@ -1,2 +1,0 @@
-profanity_check
-tests
