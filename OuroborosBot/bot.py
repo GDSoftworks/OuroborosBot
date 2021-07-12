@@ -142,7 +142,17 @@ async def detect_spam(message):
         if spam_count > max_spam_before_kick:
             author.kick()
             message.channel.send("User {0} kicked for spamming.".format(author.name))
-    
+
+async def detect_caps(message):
+    count = 0
+    if len(message.content) >= 20: #avoids short messages
+        for letters in message.content:
+            if letters.isupper():
+                count += 1
+        if count/len(message.content) >= 0.70: #blocks messages that is above 70% caps
+            await message.delete()
+            await message.channel.send("Please do not excessively use caps.")
+                    
 
 ####################################
 # Start of SQL-related code #
@@ -273,9 +283,12 @@ async def on_message(message):
             pass
             
         await detect_spam(message)
+        await detect_caps(message)
+        
     try:
         await detect_command(message)
     except BaseException as e:
         await message.channel.send("Command Failed, Reason: {0}".format(e))
+    
     
 client.run(TOKEN)
