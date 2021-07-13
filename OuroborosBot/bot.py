@@ -145,7 +145,8 @@ async def detect_spam(message):
 
 async def detect_caps(message):
     count = 0
-    if len(message.content) >= 20: #avoids short messages
+    cleaned_msg_content = message.content.replace(" ","")
+    if len(cleaned_msg_content) >= 20: #avoids short messages
         for letters in message.content:
             if letters.isupper():
                 count += 1
