@@ -17,6 +17,7 @@ async def on_ready():
         if guild.name == GUILD:
             break
 
+
     print( #prints if the bot is connected to the server
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
@@ -144,16 +145,21 @@ async def detect_spam(message):
             message.channel.send("User {0} kicked for spamming.".format(author.name))
 
 async def detect_caps(message):
-    count = 0
     cleaned_msg_content = message.content.replace(" ","")
     if len(cleaned_msg_content) >= 20: #avoids short messages
-        for letters in message.content:
-            if letters.isupper():
-                count += 1
-        if count/len(message.content) >= 0.70: #blocks messages that is above 70% caps
+        upper   = filter(str.isupper, cleaned_msg_content)
+        lower   = filter(str.islower, cleaned_msg_content)
+        letters = filter(str.isalpha,message.content)
+
+        upper   = "".join(upper)
+        lower   = "".join(lower)
+        letters = "".join(letters)
+        
+        ratio = len(upper)/len(letters)
+
+        if ratio >= 0.60: #blocks messages with upper to all letters percentage higher than 70
             await message.delete()
-            await message.channel.send("Please do not excessively use caps.")
-                    
+            await message.channel.send(message.author.mention+" Please do not excessively use caps.")
 
 ####################################
 # Start of SQL-related code #
@@ -277,7 +283,9 @@ async def detect_command(message):
             
 @client.event
 async def on_message(message):
-    if message.author.bot != True or message.author.guild_permissions.administrator: # Whitelists bots and admins
+    if message.author.bot or message.author.guild_permissions.administrator: # Whitelists bots and admins
+        pass
+    else:
         try:
             await detect_swear(message)
         except deep_translator.exceptions.NotValidPayload:
