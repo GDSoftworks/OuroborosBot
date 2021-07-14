@@ -17,6 +17,7 @@ async def on_ready():
         if guild.name == GUILD:
             break
 
+
     print( #prints if the bot is connected to the server
         f'{client.user} is connected to the following server:\n'
         f'{guild.name}(id: {guild.id})'
@@ -142,7 +143,23 @@ async def detect_spam(message):
         if spam_count > max_spam_before_kick:
             author.kick()
             message.channel.send("User {0} kicked for spamming.".format(author.name))
-    
+
+async def detect_caps(message):
+    cleaned_msg_content = message.content.replace(" ","")
+    if len(cleaned_msg_content) >= 20: #avoids short messages
+        upper   = filter(str.isupper, cleaned_msg_content)
+        lower   = filter(str.islower, cleaned_msg_content)
+        letters = filter(str.isalpha,message.content)
+
+        upper   = "".join(upper)
+        lower   = "".join(lower)
+        letters = "".join(letters)
+        
+        ratio = len(upper)/len(letters)
+
+        if ratio >= 0.60: #blocks messages with upper to all letters percentage higher than 70
+            await message.delete()
+            await message.channel.send(message.author.mention+" Please do not excessively use caps.")
 
 ####################################
 # Start of SQL-related code #
@@ -266,16 +283,21 @@ async def detect_command(message):
             
 @client.event
 async def on_message(message):
-    if message.author.bot != True or message.author.guild_permissions.administrator: # Whitelists bots and admins
+    if message.author.bot or message.author.guild_permissions.administrator: # Whitelists bots and admins
+        pass
+    else:
         try:
             await detect_swear(message)
         except deep_translator.exceptions.NotValidPayload:
             pass
             
         await detect_spam(message)
+        await detect_caps(message)
+        
     try:
         await detect_command(message)
     except BaseException as e:
         await message.channel.send("Command Failed, Reason: {0}".format(e))
+    
     
 client.run(TOKEN)
