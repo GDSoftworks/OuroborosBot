@@ -39,7 +39,7 @@ async def on_ready():
     role = discord.utils.get(guild.roles, name="Muted")
 
     for channel in guild.channels:
-        await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=False)
+        await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
     print("Mute role now cannot speak in any channel")
 
 #registers/removes member on join/leave
