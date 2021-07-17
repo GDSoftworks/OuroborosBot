@@ -337,10 +337,9 @@ async def on_message(message):
         await detect_spam(message)
         await detect_caps(message)
         
-    # try:
-    #     await detect_command(message)
-    # except BaseException as e:
-    #     await message.channel.send("Command Failed, Reason: {0}".format(e))
-    
-    await detect_command(message)
+    try:
+        await detect_command(message)
+    except BaseException as e:
+        await message.channel.send("Command Failed, Reason: {0}".format(e))
+
 client.run(TOKEN)
