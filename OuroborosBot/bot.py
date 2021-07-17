@@ -29,10 +29,13 @@ async def on_ready():
         await register_user(member.id, 0)
     print("All members registered.")
     
-    #creates a role for mute
-    await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
-    print("Mute Role created")
-    role = discord.utils.get(guild.roles, name="Muted")
+    #creates a role for mute if one does not exist
+    if discord.utils.get(guild.roles, name="Muted"):
+        pass
+    else:
+        await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
+        print("Mute Role created")
+        role = discord.utils.get(guild.roles, name="Muted")
 
     for channel in guild.channels:
         await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=False)
@@ -78,6 +81,7 @@ async def detect_swear(message):
             print("Number of swears recorded for: ", author, ": ",recorded_swears)
             await message.delete()
             await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
+            await update_badpoints(message.author.id, 3, "add")
             await log_output(author, recorded_swears)
             if recorded_swears >= warning_count:
                 await message.channel.send(message.author.mention+" This is your last warning, you will be kicked")
@@ -153,6 +157,7 @@ async def detect_spam(message):
         if spam_count > max_spam_before_kick:
             author.kick()
             message.channel.send("User {0} kicked for spamming.".format(author.name))
+            await update_badpoints(message.author.id, 1.5, "add")
 
 async def detect_caps(message):
     cleaned_msg_content = message.content.replace(" ","")
@@ -170,34 +175,21 @@ async def detect_caps(message):
         if ratio >= 0.60: #blocks messages with upper to all letters percentage higher than 70
             await message.delete()
             await message.channel.send(message.author.mention+" Please do not excessively use caps.")
+            await update_badpoints(message.author.id, 1, "add")
 
-async def mute_member(message, member, duration, unit):
-    async def unmute(message, member):
-        await member.remove_roles(role)
-        await message.channel.send(member.mention + " You have been unmuted.")
+async def mute_member(message, member):
         
     role = discord.utils.get(message.guild.roles, name="Muted")
-    duration = int(duration)
-    if len(unit) > 1:
-        raise Exception("Invalid Unit")
-    if unit == "d":
-        duration = duration*86400
-    elif unit == "h":
-        duration = duration*3600
-    elif unit == "m":
-        duration = duration*60
-    elif unit == "s":
-        pass
-    else:
-        await message.channel.send("Please specify a unit: d(Day), h(Hour), m(Minute), s(Second) and try again!")
-        raise Exception("Invalid Unit")
-    
 
     await member.add_roles(role)
-    await message.channel.send(member.mention + " You are now muted for {0} seconds".format(duration))
-    await asyncio.sleep(duration)
-    await unmute(message, member)
+    await message.channel.send(member.mention + " You have been muted by {0}".format(message.author))
 
+async def unmute(message, member):
+    
+    role = discord.utils.get(message.guild.roles, name="Muted")
+
+    await member.remove_roles(role)
+    await message.channel.send(member.mention + " You have been unmuted.")
     
     
 ####################################
@@ -313,10 +305,12 @@ async def detect_command(message):
             msgcontent = message.content
             user = message.mentions
             user = user[0]
-            chunks = re.split(' +', msgcontent)
-            unit = chunks[-1]
-            duration = chunks[-2]
-            await mute_member(message, user, duration, unit)
+            await mute_member(message, user)
+        if message.content.startswith("!unmute"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            await unmute(message, user)
             
     #Public get_badpoints command
     if message.content.startswith("!get_badpoints"):
@@ -347,5 +341,19 @@ async def on_message(message):
         await detect_command(message)
     except BaseException as e:
         await message.channel.send("Command Failed, Reason: {0}".format(e))
-
+    finally:
+        pass
+    
+    author_badpoints = await get_badpoints(message.author.id)
+    
+    if author_badpoints >= 10:
+        mute_member(message, message.author)
+    elif author_badpoints >= 20:
+        message.channel.send("You will be kicked. Reason: Badpoints higher than 20")
+        message.author.kick()
+    elif author_badpoints >= 30:
+        message.channel.send("You will be banned. Reason: Badpoints higher than 30")
+        message.author.ban()
+        
+        
 client.run(TOKEN)
