@@ -3,6 +3,7 @@ from deep_translator import GoogleTranslator
 import datetime
 import sqlite3
 import re
+import threading as th
 
 TOKEN = (open("TOKEN", "r")).readline()
 GUILD = (open("GUILD", "r")).readline()
@@ -27,6 +28,10 @@ async def on_ready():
     for member in members:
         await register_user(member.id, 0)
     print("All members registered.")
+    
+    #creates a role for mute
+    await guild.create_role(name="Muted", permissions=66560) # Permission ID = View Messages + Message History
+    print("Mute Role created")
 
 #registers/removes member on join/leave
 @client.event
@@ -161,6 +166,34 @@ async def detect_caps(message):
             await message.delete()
             await message.channel.send(message.author.mention+" Please do not excessively use caps.")
 
+async def mute_member(message, member, duration, unit):
+    class UnitError(Exception):
+        pass
+    
+    role = discord.utils.get(member.server.roles, name="Muted")
+    duration = int(duration)
+    if len(unit) > 1:
+        raise UnitError
+    if unit == "d":
+        duration = duration*86400
+    elif unit == "h":
+        duration = duration*3600
+    elif unit == "m":
+        duration = duration*60
+    elif unit == "s":
+        pass
+    else:
+        await message.channel.send("Please specify a unit: d(Day), h(Hour), m(Minute), s(Second) and try again!")
+        raise UnitError
+    
+    await member.add_roles(role)
+    await message.channel.send(member.mention + " You are now muted for {0} hours".format(duration*60))
+    T = th.Timer(duration)
+    T.start()
+    await member.remove_roles(role)
+    await message.channel.send(member.mention + " You have been unmuted.")
+    
+    
 ####################################
 # Start of SQL-related code #
 ####################################
@@ -210,7 +243,7 @@ async def get_badpoints(userid):
         row = cursor.fetchone()
         badpoints = row[1]
         return badpoints
-        
+ 
 ####################################
 # End of SQL-related code #
 ####################################
@@ -269,6 +302,16 @@ async def detect_command(message):
     else:
         pass
     
+    if message.author.guild_permissions.mute_members:
+        if message.content.startswith("!mute"):
+            msgcontent = message.content
+            user = message.mentions
+            user = user[0]
+            chunks = re.split(' +', msgcontent)
+            unit = chunks[-1]
+            duration = chunks[-2]
+            await mute_member(message, user, duration, unit)
+            
     #Public get_badpoints command
     if message.content.startswith("!get_badpoints"):
         msgcontent = message.content
