@@ -3,7 +3,7 @@ from deep_translator import GoogleTranslator
 import datetime
 import sqlite3
 import re
-import threading as th
+import asyncio
 
 TOKEN = (open("TOKEN", "r")).readline()
 GUILD = (open("GUILD", "r")).readline()
@@ -30,7 +30,7 @@ async def on_ready():
     print("All members registered.")
     
     #creates a role for mute
-    await guild.create_role(name="Muted", permissions=66560) # Permission ID = View Messages + Message History
+    await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
     print("Mute Role created")
 
 #registers/removes member on join/leave
@@ -167,13 +167,14 @@ async def detect_caps(message):
             await message.channel.send(message.author.mention+" Please do not excessively use caps.")
 
 async def mute_member(message, member, duration, unit):
-    class UnitError(Exception):
-        pass
-    
-    role = discord.utils.get(member.server.roles, name="Muted")
+    async def unmute(message, member):
+        await member.remove_roles(role)
+        await message.channel.send(member.mention + " You have been unmuted.")
+        
+    role = discord.utils.get(message.guild.roles, name="Muted")
     duration = int(duration)
     if len(unit) > 1:
-        raise UnitError
+        raise Exception("Invalid Unit")
     if unit == "d":
         duration = duration*86400
     elif unit == "h":
@@ -184,14 +185,13 @@ async def mute_member(message, member, duration, unit):
         pass
     else:
         await message.channel.send("Please specify a unit: d(Day), h(Hour), m(Minute), s(Second) and try again!")
-        raise UnitError
+        raise Exception("Invalid Unit")
     
     await member.add_roles(role)
-    await message.channel.send(member.mention + " You are now muted for {0} hours".format(duration*60))
-    T = th.Timer(duration)
-    T.start()
-    await member.remove_roles(role)
-    await message.channel.send(member.mention + " You have been unmuted.")
+    await message.channel.send(member.mention + " You are now muted for {0} seconds".format(duration))
+    await asyncio.sleep(duration)
+    await unmute(message, member)
+
     
     
 ####################################
@@ -337,10 +337,10 @@ async def on_message(message):
         await detect_spam(message)
         await detect_caps(message)
         
-    try:
-        await detect_command(message)
-    except BaseException as e:
-        await message.channel.send("Command Failed, Reason: {0}".format(e))
+    # try:
+    #     await detect_command(message)
+    # except BaseException as e:
+    #     await message.channel.send("Command Failed, Reason: {0}".format(e))
     
-    
+    await detect_command(message)
 client.run(TOKEN)
