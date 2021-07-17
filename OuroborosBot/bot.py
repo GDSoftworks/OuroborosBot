@@ -30,12 +30,13 @@ async def on_ready():
     print("All members registered.")
     
     #creates a role for mute if one does not exist
+    
     if discord.utils.get(guild.roles, name="Muted"):
         pass
     else:
         await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
         print("Mute Role created")
-        role = discord.utils.get(guild.roles, name="Muted")
+    role = discord.utils.get(guild.roles, name="Muted")
 
     for channel in guild.channels:
         await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=False)
