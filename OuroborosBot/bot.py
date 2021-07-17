@@ -32,6 +32,11 @@ async def on_ready():
     #creates a role for mute
     await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
     print("Mute Role created")
+    role = discord.utils.get(guild.roles, name="Muted")
+
+    for channel in guild.channels:
+        await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=False)
+    print("Mute role now cannot speak in any channel")
 
 #registers/removes member on join/leave
 @client.event
@@ -187,6 +192,7 @@ async def mute_member(message, member, duration, unit):
         await message.channel.send("Please specify a unit: d(Day), h(Hour), m(Minute), s(Second) and try again!")
         raise Exception("Invalid Unit")
     
+
     await member.add_roles(role)
     await message.channel.send(member.mention + " You are now muted for {0} seconds".format(duration))
     await asyncio.sleep(duration)
