@@ -3,26 +3,21 @@ from deep_translator import GoogleTranslator
 import datetime
 import sqlite3
 import re
-import asyncio
 
 TOKEN = (open("TOKEN", "r")).readline()
-GUILD = (open("GUILD", "r")).readline()
 
 client = discord.Client()
 
 @client.event
 async def on_ready():
     discord.Intents.members = True
-
+    
+    print(f'{client.user} is connected to the following server:\n')
     for guild in client.guilds:
-        if guild.name == GUILD:
-            break
 
-
-    print( #prints if the bot is connected to the server
-        f'{client.user} is connected to the following server:\n'
-        f'{guild.name}(id: {guild.id})'
-    )
+        print( #prints if the bot is connected to the server
+            f'{guild.name}(id: {guild.id})'
+        )
     #registers all members on start
     members = await guild.fetch_members().flatten()
     for member in members:
@@ -65,6 +60,7 @@ with open("list.txt", "r") as swear_list:
         swear = swear_list[swear].replace("\n", '')
         cleaned_list.append(swear)
 
+# Swear detection params
 recorded_swears = 0
 warning_count = 9
 kick_count = 10
@@ -91,8 +87,8 @@ async def detect_swear(message):
                     print("Kicked")
                     await log_kick(author, recorded_swears)
 
-           
-log_channel_id = 852202389896560650
+log_channel = discord.utils.get(discord.Guild.text_channels, name="log")
+log_channel_id = log_channel.id
 #send message to logging channel
 async def log_output(author, recorded_swears):
     channel = client.get_channel(log_channel_id)
@@ -114,9 +110,10 @@ async def send_dm(member: discord.Member, content):
     channel = await member.create_dm()
     await channel.send(content)
 
+# Params for spam detection
 time_window_milliseconds = 7000
 max_msg_per_window = 4
-author_msg_times = {}
+author_msg_times = {} # Do not edit this
 max_spam_before_kick = 5
 spam_count = 0
 
@@ -163,6 +160,7 @@ async def detect_spam(message):
 async def detect_caps(message):
     cleaned_msg_content = message.content.replace(" ","")
     if len(cleaned_msg_content) >= 20: #avoids short messages
+        
         upper   = filter(str.isupper, cleaned_msg_content)
         lower   = filter(str.islower, cleaned_msg_content)
         letters = filter(str.isalpha,message.content)
@@ -190,7 +188,7 @@ async def unmute(message, member):
     role = discord.utils.get(message.guild.roles, name="Muted")
 
     await member.remove_roles(role)
-    await message.channel.send(member.mention + " You have been unmuted.")
+    await message.channel.send(member.mention + " You have been unmuted by {0}.".format(message.author))
     
     
 ####################################
@@ -246,11 +244,10 @@ async def get_badpoints(userid):
 ####################################
 # End of SQL-related code #
 ####################################
-
-# Okay, this is inefficient and not clean
+command_exec = None
 
 async def detect_command(message):
-    command_exec = None
+    global command_exec
     if message.author.guild_permissions.ban_members: # Limits command to privledged members
         if message.content.startswith("!register_user"):
             msgcontent = message.content
@@ -301,7 +298,8 @@ async def detect_command(message):
     else:
         pass
     
-    if message.author.guild_permissions.mute_members:
+    #Mute Command
+    if message.author.guild_permissions.kick_members: # Limits command to members with kick
         if message.content.startswith("!mute"):
             msgcontent = message.content
             user = message.mentions
@@ -337,23 +335,25 @@ async def on_message(message):
             
         await detect_spam(message)
         await detect_caps(message)
+    if message.content.startswith("!"): # Only check for command if message starts with !
+        try:
+            await detect_command(message)
+        except BaseException as e:
+            await message.channel.send("Command Failed, Reason: {0}".format(e))
+        finally:
+            pass
         
-    try:
-        await detect_command(message)
-    except BaseException as e:
-        await message.channel.send("Command Failed, Reason: {0}".format(e))
-    finally:
-        pass
     
     author_badpoints = await get_badpoints(message.author.id)
     
+    # Kicks if sender badpoints is high
     if author_badpoints >= 10:
         mute_member(message, message.author)
     elif author_badpoints >= 20:
-        message.channel.send("You will be kicked. Reason: Badpoints higher than 20")
+        message.channel.send("You will be kicked. Reason: Badpoints higher than 20 (Badpoints = {0})".format(author_badpoints))
         message.author.kick()
     elif author_badpoints >= 30:
-        message.channel.send("You will be banned. Reason: Badpoints higher than 30")
+        message.channel.send("You will be banned. Reason: Badpoints higher than 30 (Badpoints = {0})".format(author_badpoints))
         message.author.ban()
         
         
