@@ -1,5 +1,5 @@
 import discord
-from deep_translator import GoogleTranslator
+import deep_translator
 import datetime
 import sqlite3
 import re
@@ -70,7 +70,7 @@ async def detect_swear(message):
     global recorded_swears
     msg = message.content.lower()
     author = message.author
-    translated = GoogleTranslator(source='auto', target='en').translate(msg)
+    translated = deep_translator.GoogleTranslator(source='auto', target='en').translate(msg)
     translated_msg = translated.lower()
     for word in cleaned_list:
         if word in translated_msg:
@@ -260,7 +260,6 @@ async def detect_command(message):
             await message.channel.send("User {0} registered!".format(user.name))
             newbp = await get_badpoints(id)
             await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
-            command_exec = True
         elif message.content.startswith("!update_badpoints"):
             msgcontent = message.content
             user = message.mentions
@@ -282,7 +281,6 @@ async def detect_command(message):
             await message.channel.send("Updated badpoints for user {0}, {1} {2} badpoints.".format(user.name, operation, badpoints))
             newbp = await get_badpoints(id)
             await message.channel.send("Badpoints for user {0} is now {1}".format(user.name, newbp))
-            command_exec = True
         elif message.content.startswith("!remove_user"):
             msgcontent = message.content
             user = message.mentions
@@ -290,13 +288,6 @@ async def detect_command(message):
             id = user.id
             await remove_user(id)
             await message.channel.send("Removed user {0} from database.".format(user.name))
-            command_exec = True
-        else:
-            pass
-    elif message.author.guild_permissions.ban_members == False and command_exec == True:
-        message.channel.send("Insufficient permissions to execute command!")
-    else:
-        pass
     
     #Mute Command
     if message.author.guild_permissions.kick_members: # Limits command to members with kick
@@ -319,31 +310,8 @@ async def detect_command(message):
         id = user.id
         badpoints = await get_badpoints(id)
         await message.channel.send("Badpoints for user {0} is {1}".format(user.name, badpoints))
-    else:
-        pass
 
-            
-@client.event
-async def on_message(message):
-    if message.author.bot or message.author.guild_permissions.administrator: # Whitelists bots and admins
-        pass
-    else:
-        try:
-            await detect_swear(message)
-        except deep_translator.exceptions.NotValidPayload:
-            pass
-            
-        await detect_spam(message)
-        await detect_caps(message)
-    if message.content.startswith("!"): # Only check for command if message starts with !
-        try:
-            await detect_command(message)
-        except BaseException as e:
-            await message.channel.send("Command Failed, Reason: {0}".format(e))
-        finally:
-            pass
-        
-    
+async def check_author_badpoints(message):
     author_badpoints = await get_badpoints(message.author.id)
     
     # Kicks if sender badpoints is high
@@ -355,6 +323,35 @@ async def on_message(message):
     elif author_badpoints >= 30:
         message.channel.send("You will be banned. Reason: Badpoints higher than 30 (Badpoints = {0})".format(author_badpoints))
         message.author.ban()
+
+async def check_command(message):
+
+    if message.content.startswith("!"): # Only check for command if message starts with !
+        try:
+            await detect_command(message)
+        except BaseException as e:
+            await message.channel.send("Command Failed, Reason: {0}".format(e))
+        finally:
+            pass
+        
+@client.event
+async def on_message(message):
+        
+    if message.author.bot or message.author.guild_permissions.administrator: # Whitelists bots and admins
+        pass
+    else:
+        try:
+            await detect_swear(message)
+        except deep_translator.exceptions.NotValidPayload:
+            pass
+            
+        await detect_spam(message)
+        await detect_caps(message)
+    
+    await check_command(message)
+    await check_author_badpoints(message)
+    
+
         
         
 client.run(TOKEN)
