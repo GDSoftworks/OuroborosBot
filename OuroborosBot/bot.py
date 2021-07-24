@@ -8,8 +8,11 @@ TOKEN = (open("TOKEN", "r")).readline()
 
 client = discord.Client()
 
+log_channel_id = None
+
 @client.event
 async def on_ready():
+    global log_channel_id
     discord.Intents.members = True
     
     print(f'{client.user} is connected to the following server:\n')
@@ -36,6 +39,9 @@ async def on_ready():
     for channel in guild.channels:
         await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
     print("Mute role now cannot speak in any channel")
+    
+    log_channel = discord.utils.get(guild.text_channels, name="log")
+    log_channel_id = log_channel.id
 
 #registers/removes member on join/leave
 @client.event
@@ -87,10 +93,10 @@ async def detect_swear(message):
                     print("Kicked")
                     await log_kick(author, recorded_swears)
 
-log_channel = discord.utils.get(discord.Guild.text_channels, name="log")
-log_channel_id = log_channel.id
+
 #send message to logging channel
 async def log_output(author, recorded_swears):
+    global log_channel_id
     channel = client.get_channel(log_channel_id)
     author = str(author)
     recorded_swears = str(recorded_swears)
@@ -98,6 +104,7 @@ async def log_output(author, recorded_swears):
     await channel.send(logmsg.format(author, recorded_swears))
 
 async def log_kick(author, recorded_swears):
+    global log_channel_id
     channel = client.get_channel(log_channel_id)
     author_name = str(author)
     recorded_swears = str(recorded_swears)
