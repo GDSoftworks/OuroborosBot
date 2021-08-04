@@ -35,13 +35,21 @@ async def on_ready():
         await guild.create_role(name="Muted", permissions=discord.Permissions(permissions=66560)) # Permission ID = View Messages + Message History
         print("Mute Role created")
     role = discord.utils.get(guild.roles, name="Muted")
-
-    for channel in guild.channels:
-        await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
-    print("Mute role now cannot speak in any channel")
+    try:
+        for channel in guild.channels:
+            await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+    except discord.errors.Forbidden:
+        print("Missing permissions to set role permission for every channel")
+    else:
+        print("Mute role now cannot speak in any channel")
+    finally:
+        print("Mute role created.")
     
-    log_channel = discord.utils.get(guild.text_channels, name="log")
-    log_channel_id = log_channel.id
+    if not discord.utils.get(guild.text_channels, name="log"):
+        raise Exception("No Mute Channel")
+    else:
+        log_channel = discord.utils.get(guild.text_channels, name="log")
+        log_channel_id = log_channel.id
 
 #registers/removes member on join/leave
 @client.event
