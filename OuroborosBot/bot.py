@@ -46,7 +46,7 @@ async def on_ready():
         print("Mute role created.")
     
     if not discord.utils.get(guild.text_channels, name="log"):
-        raise Exception("No Mute Channel")
+        raise Exception("No Log Channel")
     else:
         log_channel = discord.utils.get(guild.text_channels, name="log")
         log_channel_id = log_channel.id
