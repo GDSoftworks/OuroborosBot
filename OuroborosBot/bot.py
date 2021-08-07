@@ -9,9 +9,11 @@ TOKEN = (open("TOKEN", "r")).readline()
 client = discord.Client()
 
 log_channel_id = None
+log_channel = None
 
 @client.event
 async def on_ready():
+    global log_channel
     global log_channel_id
     discord.Intents.members = True
     
@@ -79,6 +81,12 @@ recorded_swears = 0
 warning_count = 9
 kick_count = 10
 
+async def log_swear(author, recorded_swears):
+    author = str(author)
+    recorded_swears = str(recorded_swears)
+    logmsg="Number of swears recorded for: {0} = {1}"
+    send_log_msg(logmsg)
+    
 #Detects and removes swears
 async def detect_swear(message):
     global recorded_swears
@@ -93,33 +101,24 @@ async def detect_swear(message):
             await message.delete()
             await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
             await update_badpoints(message.author.id, 3, "add")
-            await log_output(author, recorded_swears)
+            await log_swear(author, recorded_swears)
             if recorded_swears >= warning_count:
                 await message.channel.send(message.author.mention+" This is your last warning, you will be kicked")
                 if recorded_swears >= kick_count:
                     await message.channel.send(message.author.mention+" You will be kicked promptly")
                     print("Kicked")
-                    await log_kick(author, recorded_swears)
+                    await message,author.kick()
+                    reason = "Execssive Swearing, Recorded Swears = {0}".format(recorded_swears)
+                    await log_kick(author, reason)
 
 
-#send message to logging channel
-async def log_output(author, recorded_swears):
-    global log_channel_id
-    channel = client.get_channel(log_channel_id)
-    author = str(author)
-    recorded_swears = str(recorded_swears)
-    logmsg="Number of swears recorded for: {0} = {1}"
-    await channel.send(logmsg.format(author, recorded_swears))
+async def send_log_msg(logmsg):
+    await log_channel.send("Log message: {0}, Timestamp: {1}".format(logmsg, str(datetime.datetime.now())))
+    print("Log sent")
 
-async def log_kick(author, recorded_swears):
-    global log_channel_id
-    channel = client.get_channel(log_channel_id)
-    author_name = str(author)
-    recorded_swears = str(recorded_swears)
-    logmsg="Kicked {0}, {0} has used swears for {1} times"
-    await channel.send(logmsg.format(author_name, recorded_swears))
-    #(Un)comment to enable/disable kick
-    await author.kick()
+async def log_kick(member, reason):
+    name = member.name
+    send_log_msg("Kicked member {0}, Reason: {1}".format(name, reason))
 
 async def send_dm(member: discord.Member, content):
     channel = await member.create_dm()
