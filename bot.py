@@ -91,7 +91,7 @@ async def detect_swear(message):
             recorded_swears = recorded_swears + 1
             print("Number of swears recorded for: @", author, ": ",recorded_swears)
             await message.delete()
-            await message.channel.send(message.author.mention+" Dont use that word 🙊! This is a warning")
+            await message.channel.send(message.author.mention+" Don't use that word 🙊! This is a warning")
             await update_badpoints(message.author.id, 3, "add")
             await log_output(author, recorded_swears)
             if recorded_swears >= warning_count:
