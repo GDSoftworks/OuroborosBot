@@ -4,7 +4,7 @@ import datetime
 import sqlite3
 import re
 
-TOKEN = (open("TOKEN", "r")).readline()
+TOKEN = (open("TOKEN-Testing", "r")).readline()
 
 client = discord.Client()
 
